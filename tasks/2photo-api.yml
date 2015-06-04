@@ -1,0 +1,34 @@
+- hosts: all
+  remote_user: root
+  vars_files:
+    - ../vars/main.yml
+  vars:
+    project_dir: "/var/www/2photo-api"
+    virtualenv_dir: "{{ project_dir }}/.env"
+    requirements_file: "{{ project_dir }}/requirements.pip"
+    repo_url: "https://github.com/petropavel13/2photo-api"
+    postgresql_server_dev: "postgresql-server-dev-{{ pg_version }}"
+  tasks:
+    - name: Install pip
+      apt: name=python-pip
+    - name: Install virtualenv
+      pip: name=virtualenv
+    - name: Install git
+      apt: name=git
+    - name: Clone repo
+      git: repo={{ repo_url }} dest={{ project_dir }}
+      become_user: www-data
+    - name: Create virtualenv
+      command: "virtualenv {{ virtualenv_dir }}"
+      become_user: www-data
+    - name: Install dev packages
+      apt: name={{ item }}
+      with_items:
+        - libcurl4-openssl-dev
+        - "{{ postgresql_server_dev }}"
+        - python-dev
+        - libxml2-dev
+        - libxslt1-dev
+    - name: Install pip requirements
+      pip: virtualenv={{ virtualenv_dir }} requirements={{ requirements_file }}
+      become_user: www-data
