@@ -1,0 +1,26 @@
+- hosts: all
+  remote_user: root
+  vars:
+    pg_version: "9.3"
+    pg_conf_dir: "/etc/postgresql/{{ pg_version }}/main"
+    postgresql_conf_path: "{{ pg_conf_dir }}/postgresql.conf"
+    postgresql_conf_backup_path: "{{ pg_conf_dir }}/postgresql.conf.backup"
+    postgresql_conf_base_path: "{{ pg_conf_dir }}/postgresql.conf.base"
+    postgresql_conf_tweaks_path: "{{ pg_conf_dir }}/postgresql.conf.tweaks"
+    postgresql_conf_template: "../templates/postgresql.conf"
+    postgresql_conf_tweaks_template: "../templates/postgresql.conf.tweaks"
+  tasks:
+      - name: Install postgresql
+        apt: name=postgresql-{{ pg_version }}
+      - name: Backup distributive config
+        become_user: postgres
+        shell: cp -n {{ postgresql_conf_path }} {{ postgresql_conf_backup_path }}
+      - name: Copy distributive config
+        become_user: postgres
+        shell: cp {{ postgresql_conf_backup_path }} {{ postgresql_conf_base_path }}
+      - name: Create tweak config
+        template: src={{ postgresql_conf_tweaks_template }} dest={{ postgresql_conf_tweaks_path }} group=postgres owner=postgres
+      - name: Create main config
+        template: src={{ postgresql_conf_template }} dest={{ postgresql_conf_path }} owner=postgres group=postgres
+      - name: Reload postgresql conf
+        service: name=postgresql state=reloaded
