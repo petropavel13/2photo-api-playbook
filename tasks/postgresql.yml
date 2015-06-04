@@ -1,7 +1,8 @@
 - hosts: all
   remote_user: root
+  vars_files:
+    - ../vars/main.yml
   vars:
-    pg_version: "9.3"
     pg_conf_dir: "/etc/postgresql/{{ pg_version }}/main"
     postgresql_conf_path: "{{ pg_conf_dir }}/postgresql.conf"
     postgresql_conf_backup_path: "{{ pg_conf_dir }}/postgresql.conf.backup"
