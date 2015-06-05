@@ -2,12 +2,14 @@
   remote_user: root
   vars_files:
     - ../vars/main.yml
+    - ../vault/db.yml
   vars:
     project_dir: "/var/www/2photo-api"
     virtualenv_dir: "{{ project_dir }}/.env"
+    local_settings_path: "{{ project_dir }}/two_photo_api/local_settings.py"
+    local_settings_template: "../templates/local_settings.py"
     requirements_file: "{{ project_dir }}/requirements.pip"
     repo_url: "https://github.com/petropavel13/2photo-api"
-    postgresql_server_dev: "postgresql-server-dev-{{ pg_version }}"
   tasks:
     - name: Install pip
       apt: name=python-pip
@@ -25,10 +27,13 @@
       apt: name={{ item }}
       with_items:
         - libcurl4-openssl-dev
-        - "{{ postgresql_server_dev }}"
+        - "postgresql-server-dev-{{ pg_version }}"
         - python-dev
         - libxml2-dev
         - libxslt1-dev
     - name: Install pip requirements
       pip: virtualenv={{ virtualenv_dir }} requirements={{ requirements_file }}
+      become_user: www-data
+    - name: Create local settings
+      template: src={{ local_settings_template }} dest={{ local_settings_path }}
       become_user: www-data
