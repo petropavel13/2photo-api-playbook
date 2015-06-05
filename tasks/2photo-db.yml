@@ -1,0 +1,17 @@
+- hosts: all
+  remote_user: root
+  vars_files:
+    - ../vault/db.yml
+  tasks:
+    - name: Create DB user
+      shell: createuser {{ db.user }} || true # or already exists
+      sudo: yes
+      sudo_user: postgres
+    - name: Create DB
+      shell: createdb {{ db.name }} -w -O {{ db.user }} || true # or already exists
+      sudo: yes
+      sudo_user: postgres
+    - name: Set DB user password
+      command: psql -c "ALTER ROLE \"{{ db.user }}\" WITH PASSWORD '{{ db.password }}';"
+      sudo: yes
+      sudo_user: postgres
