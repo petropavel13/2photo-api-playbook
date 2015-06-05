@@ -2,6 +2,7 @@
   remote_user: root
   vars_files:
     - ../vars/main.yml
+    - ../vault/db.yml
   vars:
     pg_conf_dir: "/etc/postgresql/{{ pg_version }}/main"
     postgresql_conf_path: "{{ pg_conf_dir }}/postgresql.conf"
@@ -10,18 +11,22 @@
     postgresql_conf_tweaks_path: "{{ pg_conf_dir }}/postgresql.conf.tweaks"
     postgresql_conf_template: "../templates/postgresql.conf"
     postgresql_conf_tweaks_template: "../templates/postgresql.conf.tweaks"
+    postgresql_pg_hba_template: "../templates/pg_hba.conf"
+    postgresql_pg_hba_path: "{{ pg_conf_dir}}/pg_hba.conf"
   tasks:
       - name: Install postgresql
         apt: name=postgresql-{{ pg_version }}
       - name: Backup distributive config
         become_user: postgres
-        shell: cp -n {{ postgresql_conf_path }} {{ postgresql_conf_backup_path }}
+        command: cp -n {{ postgresql_conf_path }} {{ postgresql_conf_backup_path }}
       - name: Copy distributive config
         become_user: postgres
-        shell: cp {{ postgresql_conf_backup_path }} {{ postgresql_conf_base_path }}
+        command: cp {{ postgresql_conf_backup_path }} {{ postgresql_conf_base_path }}
       - name: Create tweak config
-        template: src={{ postgresql_conf_tweaks_template }} dest={{ postgresql_conf_tweaks_path }} group=postgres owner=postgres
+        template: src={{ postgresql_conf_tweaks_template }} dest={{ postgresql_conf_tweaks_path }} owner=postgres group=postgres
       - name: Create main config
         template: src={{ postgresql_conf_template }} dest={{ postgresql_conf_path }} owner=postgres group=postgres
+      - name: Create pg_hba.conf
+        template: src={{ postgresql_pg_hba_template }} dest={{ postgresql_pg_hba_path }} owner=postgres group=postgres
       - name: Reload postgresql conf
         service: name=postgresql state=reloaded
