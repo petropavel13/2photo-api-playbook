@@ -17,12 +17,16 @@
       pip: name=virtualenv
     - name: Install git
       apt: name=git
+    - name: Create project folder
+      file: path={{ project_dir }} state=directory owner="www-data" group="www-data"
     - name: Clone repo
       git: repo={{ repo_url }} dest={{ project_dir }}
-      become_user: www-data
+      sudo: yes
+      sudo_user: www-data
     - name: Create virtualenv
       command: "virtualenv {{ virtualenv_dir }}"
-      become_user: www-data
+      sudo: yes
+      sudo_user: www-data
     - name: Install dev packages
       apt: name={{ item }}
       with_items:
@@ -32,8 +36,10 @@
         - libxml2-dev
         - libxslt1-dev
     - name: Install pip requirements
-      pip: virtualenv={{ virtualenv_dir }} requirements={{ requirements_file }}
-      become_user: www-data
+      pip: virtualenv={{ virtualenv_dir }} requirements={{ requirements_file }} extra_args="--no-cache-dir"
+      sudo: yes
+      sudo_user: www-data
     - name: Create local settings
       template: src={{ local_settings_template }} dest={{ local_settings_path }}
-      become_user: www-data
+      sudo: yes
+      sudo_user: www-data
