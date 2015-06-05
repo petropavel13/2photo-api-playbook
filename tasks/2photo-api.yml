@@ -3,6 +3,7 @@
   vars_files:
     - ../vars/main.yml
     - ../vault/db.yml
+    - ../vault/django.yml
   vars:
     project_dir: "/var/www/2photo-api"
     virtualenv_dir: "{{ project_dir }}/.env"

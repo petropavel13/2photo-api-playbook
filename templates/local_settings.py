@@ -12,3 +12,7 @@ DATABASES = {
         'PASSWORD': '{{ db.password }}',
     }
 }
+
+SECRET_KEY = '{{ django.secret_key }}'
+
+ALLOWED_HOSTS = ['localhost']
