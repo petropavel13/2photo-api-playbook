@@ -10,13 +10,17 @@
     local_settings_template: "../templates/local_settings.py"
     requirements_file: "{{ project_dir }}/requirements.pip"
     repo_url: "https://github.com/petropavel13/2photo-api"
+    nginx_site_conf_src_path: "{{ project_dir }}/two_photo_api/nginx.conf"
+    nginx_site_conf_dest_path: "/etc/nginx/sites-available/2photo-api"
   tasks:
-    - name: Install pip
-      apt: name=python-pip
+    - name: Install essential packages
+      apt: name={{ item }}
+      with_items:
+        - python-pip
+        - git
+        - nginx
     - name: Install virtualenv
       pip: name=virtualenv
-    - name: Install git
-      apt: name=git
     - name: Create project folder
       file: path={{ project_dir }} state=directory owner="www-data" group="www-data"
     - name: Clone repo
@@ -43,3 +47,5 @@
       template: src={{ local_settings_template }} dest={{ local_settings_path }}
       sudo: yes
       sudo_user: www-data
+    - name: Link nginx configuration
+      file: src={{ nginx_site_conf_src_path }} dest={{ nginx_site_conf_dest_path }} state=link
