@@ -1,3 +1,4 @@
 pg_version: "9.3"
 project_dir: "/var/www/2photo-api"
 virtualenv_dir: "{{ project_dir }}/.env"
+app_name: "two_photo_api"

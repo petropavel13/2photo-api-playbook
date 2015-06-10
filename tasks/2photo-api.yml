@@ -11,6 +11,10 @@
     repo_url: "https://github.com/petropavel13/2photo-api"
     nginx_site_conf_template: "../templates/nginx.conf"
     nginx_default_conf_path: "/etc/nginx/sites-available/default"
+    uwsgi_ini_template: "../templates/uwsgi.ini"
+    uwsgi_ini_path: "{{ project_dir }}/two_photo_api/uwsgi.ini"
+    supervisor_conf_template: "../templates/two_photo_api.supervisor.conf"
+    supervisor_conf_path: "/etc/supervisor/conf.d/two_photo_api.conf"
   tasks:
     - name: Install essential packages
       apt: name={{ item }}
@@ -18,6 +22,7 @@
         - python-pip
         - git
         - nginx
+        - supervisor
     - name: Install virtualenv
       pip: name=virtualenv
     - name: Create project folder
@@ -43,13 +48,21 @@
       sudo: yes
       sudo_user: www-data
     - name: Create local settings
-      template: src={{ local_settings_template }} dest={{ local_settings_path }}
+      template: src={{ local_settings_template }} dest={{ local_settings_path }} owner="www-data" group="www-data"
+    - name: Initial migrate DB
+      shell: ". {{ virtualenv_dir }}/bin/activate && python {{ project_dir }}/manage.py migrate"
       sudo: yes
       sudo_user: www-data
     - name: Create nginx configuration
       template: src={{ nginx_site_conf_template }} dest={{ nginx_default_conf_path }}
       notify:
       - reload nginx conf
+    - name: Create uwsgi.ini
+      template: src={{ uwsgi_ini_template }} dest={{ uwsgi_ini_path }} owner="www-data" group="www-data"
+    - name: Create supervisor conf
+      template: src={{ supervisor_conf_template }} dest={{ supervisor_conf_path }} owner="www-data" group="www-data"
+    - name: Run with supervisor
+      supervisorctl: name="{{ app_name }}" config="{{ supervisor_conf_path }}" state=restarted
   handlers:
     - name: reload nginx conf
       service: name=nginx state=reloaded
