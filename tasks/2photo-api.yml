@@ -5,8 +5,6 @@
     - ../vault/db.yml
     - ../vault/django.yml
   vars:
-    project_dir: "/var/www/2photo-api"
-    virtualenv_dir: "{{ project_dir }}/.env"
     local_settings_path: "{{ project_dir }}/two_photo_api/local_settings.py"
     local_settings_template: "../templates/local_settings.py"
     requirements_file: "{{ project_dir }}/requirements.pip"
