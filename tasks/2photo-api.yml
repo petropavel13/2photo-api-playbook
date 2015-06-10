@@ -9,8 +9,8 @@
     local_settings_template: "../templates/local_settings.py"
     requirements_file: "{{ project_dir }}/requirements.pip"
     repo_url: "https://github.com/petropavel13/2photo-api"
-    nginx_site_conf_src_path: "{{ project_dir }}/two_photo_api/nginx.conf"
-    nginx_site_conf_dest_path: "/etc/nginx/sites-available/2photo-api"
+    nginx_site_conf_template: "../templates/nginx.conf"
+    nginx_default_conf_path: "/etc/nginx/sites-available/default"
   tasks:
     - name: Install essential packages
       apt: name={{ item }}
@@ -46,5 +46,10 @@
       template: src={{ local_settings_template }} dest={{ local_settings_path }}
       sudo: yes
       sudo_user: www-data
-    - name: Link nginx configuration
-      file: src={{ nginx_site_conf_src_path }} dest={{ nginx_site_conf_dest_path }} state=link
+    - name: Create nginx configuration
+      template: src={{ nginx_site_conf_template }} dest={{ nginx_default_conf_path }}
+      notify:
+      - reload nginx conf
+  handlers:
+    - name: reload nginx conf
+      service: name=nginx state=reloaded
