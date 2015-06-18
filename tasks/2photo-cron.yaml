@@ -1,0 +1,13 @@
+- hosts: all
+  remote_user: root
+  vars_files:
+    - ../vars/main.yml
+  tasks:
+    - name: Add daily update task
+      cron: name="Daily update" special_time="daily" user="www-data"
+            job=". {{ virtualenv_dir }}/bin/activate && python {{ project_dir }}/updater.py"
+            cron_file="2photo-daily_update"
+    - name: Add weekly update task
+      cron: name="Weekly update" special_time="weekly" user="www-data"
+            job=". {{ virtualenv_dir }}/bin/activate && python {{ project_dir }}/grabber.py"
+            cron_file="2photo-weekly_update"
